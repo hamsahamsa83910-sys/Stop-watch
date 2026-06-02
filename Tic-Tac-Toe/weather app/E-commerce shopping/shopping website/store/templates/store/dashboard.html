@@ -1,0 +1,117 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard | AetherStore{% endblock %}
+
+{% block content %}
+    <div class="dashboard-layout">
+        
+        <!-- Sidebar Profile info -->
+        <aside class="dashboard-sidebar glass-panel" id="dashboard-sidebar">
+            <div class="profile-summary">
+                <div class="profile-avatar">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <h3>{{ user.username }}</h3>
+                <p>{{ user.email }}</p>
+            </div>
+            
+            <ul class="dashboard-nav">
+                <li class="dashboard-nav-item">
+                    <a href="{% url 'store:dashboard' %}" class="dashboard-nav-link active" id="dashboard-tab-home">
+                        <i class="fa-solid fa-table-columns"></i> Dashboard Home
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a href="{% url 'store:cart' %}" class="dashboard-nav-link" id="dashboard-tab-cart">
+                        <i class="fa-solid fa-cart-shopping"></i> My Shopping Cart
+                    </a>
+                </li>
+                {% if user.is_staff or user.is_superuser %}
+                    <li class="dashboard-nav-item">
+                        <a href="{% url 'store:admin_dashboard' %}" class="dashboard-nav-link" style="color:var(--accent-secondary)">
+                            <i class="fa-solid fa-user-shield"></i> Custom Admin Panel
+                        </a>
+                    </li>
+                {% endif %}
+                <li class="dashboard-nav-item" style="margin-top:24px">
+                    <a href="{% url 'store:logout' %}" class="dashboard-nav-link" style="color:var(--error)">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout Account
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Dashboard main panel content -->
+        <div class="dashboard-content">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <h1 style="color:#fff; font-size:2rem">Dashboard Overview</h1>
+                <span style="color:var(--text-secondary)">Date joined: {{ user.date_joined|date:"M d, Y" }}</span>
+            </div>
+
+            <!-- Dashboard Stats panels -->
+            <div class="stats-grid">
+                <div class="stat-card glass-panel">
+                    <span class="stat-label">Total Placed Orders</span>
+                    <span class="stat-value">{{ orders|length }}</span>
+                </div>
+                <div class="stat-card glass-panel">
+                    <span class="stat-label">Membership Tier</span>
+                    <span class="stat-value" style="color:var(--accent-secondary)">Aether Platinum</span>
+                </div>
+            </div>
+
+            <!-- Order history table log -->
+            <div class="table-card glass-panel">
+                <h3 class="table-title">Your Order History</h3>
+                {% if orders %}
+                    <table class="custom-table" id="dashboard-orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date Placed</th>
+                                <th>Total Cost</th>
+                                <th>Status</th>
+                                <th style="text-align:right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr id="order-row-{{ order.id }}">
+                                    <td><strong>#{{ order.id }}</strong></td>
+                                    <td>{{ order.order_date|date:"F d, Y" }}</td>
+                                    <td><strong style="color:#fff">${{ order.total_price }}</strong></td>
+                                    <td>
+                                        <span class="status-badge 
+                                            {% if order.status == 'Pending' %}status-pending
+                                            {% elif order.status == 'Processing' %}status-processing
+                                            {% elif order.status == 'Shipped' %}status-shipped
+                                            {% elif order.status == 'Delivered' %}status-delivered
+                                            {% elif order.status == 'Cancelled' %}status-cancelled
+                                            {% endif %}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td style="text-align:right">
+                                        <a href="{% url 'store:order_detail' order.id %}" class="btn btn-outline btn-sm" id="view-order-{{ order.id }}">
+                                            <i class="fa-solid fa-circle-info"></i> View Receipt
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div style="padding:48px; text-align:center" id="empty-dashboard-state">
+                        <i class="fa-solid fa-box-open fa-3x" style="color:var(--text-muted); margin-bottom:16px"></i>
+                        <p style="color:var(--text-secondary); margin-bottom:24px">You haven't placed any orders yet. Once you make purchases, they'll display here.</p>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-bag-shopping"></i> Browse Products</a>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Custom Admin Dashboard | AetherStore{% endblock %}
+
+{% block content %}
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; flex-wrap:wrap; gap:16px">
+        <div>
+            <h1 style="font-size:2.2rem; color:#fff"><i class="fa-solid fa-user-shield" style="color:var(--accent-secondary)"></i> Custom Admin Dashboard</h1>
+            <p style="color:var(--text-secondary)">AetherStore store-wide inventory, user management, and order fullfilment metrics.</p>
+        </div>
+        <a href="/django-admin/" target="_blank" class="btn btn-secondary btn-sm"><i class="fa-solid fa-gears"></i> Open Django Admin Console</a>
+    </div>
+
+    <!-- General Revenue & Fulfillment Metrics -->
+    <section style="margin-bottom: 40px">
+        <div class="stats-grid">
+            <div class="stat-card glass-panel" style="border-left: 4px solid var(--success)">
+                <span class="stat-label">Total Store Sales</span>
+                <span class="stat-value" style="color:var(--success)">${{ total_sales|floatformat:2 }}</span>
+            </div>
+            <div class="stat-card glass-panel" style="border-left: 4px solid var(--accent-secondary)">
+                <span class="stat-label">Total Orders Placed</span>
+                <span class="stat-value" style="color:var(--accent-secondary)">{{ total_orders }}</span>
+            </div>
+            <div class="stat-card glass-panel" style="border-left: 4px solid var(--accent-primary)">
+                <span class="stat-label">Active Catalog Items</span>
+                <span class="stat-value" style="color:var(--accent-primary)">{{ total_products }}</span>
+            </div>
+            <div class="stat-card glass-panel" style="border-left: 4px solid var(--error)">
+                <span class="stat-label">Out of Stock Alert</span>
+                <span class="stat-value" style="color:var(--error)">{{ out_of_stock|length }}</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Out of Stock Warnings -->
+    {% if out_of_stock %}
+        <div class="glass-panel" style="padding:20px; border-color:var(--error); margin-bottom:40px; background:rgba(255,23,68,0.05)">
+            <h3 style="color:var(--error); font-size:1.1rem; margin-bottom:12px; display:flex; align-items:center; gap:8px"><i class="fa-solid fa-triangle-exclamation"></i> Out-of-Stock Inventory Warning</h3>
+            <ul style="list-style:none; display:flex; gap:16px; flex-wrap:wrap; font-size:0.9rem">
+                {% for prod in out_of_stock %}
+                    <li style="background:rgba(255,23,68,0.1); padding:4px 12px; border-radius:4px; color:#fff">
+                        <strong style="color:var(--error)">{{ prod.name }}</strong> (ID: {{ prod.id }})
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Layout Grid: Left (Orders), Right (Users & Products Quick List) -->
+    <div class="checkout-layout" style="grid-template-columns: 1.4fr 0.6fr; gap:32px">
+        
+        <!-- Left Panel: Orders Fulfillment -->
+        <div class="table-card glass-panel">
+            <h3 class="table-title">Fulfillment Orders</h3>
+            
+            <div style="margin-bottom:20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+                <span style="font-size:0.85rem; color:var(--text-secondary)">Quick Status Filter:</span>
+                <a href="{% url 'store:admin_dashboard' %}" class="btn btn-outline btn-sm {% if not request.GET.status %}btn-secondary{% endif %}" style="padding: 4px 10px; font-size:0.75rem">All</a>
+                {% for code, name in status_choices %}
+                    <a href="{% url 'store:admin_dashboard' %}?status={{ code }}" class="btn btn-outline btn-sm {% if request.GET.status == code %}btn-secondary{% endif %}" style="padding: 4px 10px; font-size:0.75rem">{{ name }}</a>
+                {% endfor %}
+            </div>
+
+            {% if orders %}
+                <table class="custom-table" id="admin-orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status Control</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr id="admin-order-row-{{ order.id }}">
+                                <td>
+                                    <strong>#{{ order.id }}</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px">{{ order.order_date|date:"M d, Y" }}</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:600; color:#fff">{{ order.first_name }} {{ order.last_name }}</div>
+                                    <div style="font-size:0.75rem; color:var(--text-secondary)">{{ order.email }}</div>
+                                </td>
+                                <td><strong style="color:var(--accent-secondary)">${{ order.total_price }}</strong></td>
+                                <td>
+                                    <!-- Dynamic Action Form to update status -->
+                                    <form action="{% url 'store:update_order_status' order.id %}" method="POST" style="display:flex; gap:8px; align-items:center">
+                                        {% csrf_token %}
+                                        <select name="status" class="form-input" style="padding: 6px 10px; font-size: 0.8rem; background:rgba(25,20,48,0.8); border-color:var(--border-glass); width:120px" aria-label="Order status select">
+                                            {% for code, name in status_choices %}
+                                                <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-sm" style="padding: 6px 12px; font-size:0.8rem" aria-label="Save status"><i class="fa-solid fa-floppy-disk"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="color:var(--text-secondary); padding:20px; text-align:center">No orders match the selected filters.</p>
+            {% endif %}
+        </div>
+
+        <!-- Right Panel: Users Database recap -->
+        <div class="table-card glass-panel" style="padding: 24px">
+            <h3 class="table-title" style="font-size:1.15rem">Store Users</h3>
+            <table class="custom-table" id="admin-users-table" style="font-size:0.85rem">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr id="admin-user-row-{{ user.id }}">
+                            <td>
+                                <strong style="color:#fff">{{ user.username }}</strong>
+                                <div style="font-size:0.75rem; color:var(--text-secondary)">{{ user.email }}</div>
+                            </td>
+                            <td>
+                                {% if user.is_superuser %}
+                                    <span style="color:var(--accent-secondary); font-weight:700"><i class="fa-solid fa-crown"></i> Super</span>
+                                {% elif user.is_staff %}
+                                    <span style="color:var(--accent-primary); font-weight:700"><i class="fa-solid fa-user-tie"></i> Staff</span>
+                                {% else %}
+                                    <span style="color:var(--text-muted)">Member</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

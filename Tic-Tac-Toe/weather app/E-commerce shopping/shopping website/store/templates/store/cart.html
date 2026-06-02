@@ -1,0 +1,93 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Your Shopping Cart | AetherStore{% endblock %}
+
+{% block content %}
+    <h1 style="font-size: 2.2rem; color: #fff; margin-bottom: 32px">Shopping Cart</h1>
+
+    {% if cart_items %}
+        <div class="cart-layout">
+            
+            <!-- Left Column: Item List -->
+            <div class="cart-table-card glass-panel" id="cart-item-list">
+                {% for item in cart_items %}
+                    <div class="cart-item-row" id="cart-row-{{ item.id }}">
+                        <a href="{% url 'store:product_detail' item.product.slug %}">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-img">
+                            {% else %}
+                                <div style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; background:#120e24; color:var(--text-muted); border-radius:var(--radius-sm)">
+                                    <i class="fa-regular fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        
+                        <div class="cart-item-info">
+                            <h4><a href="{% url 'store:product_detail' item.product.slug %}">{{ item.product.name }}</a></h4>
+                            <p>Stock: {{ item.product.stock }} items available</p>
+                        </div>
+                        
+                        <!-- AJAX Quantity Adjustment -->
+                        <div class="qty-control" data-product-id="{{ item.product.id }}" style="margin: 0 auto">
+                            <button class="qty-btn qty-minus" type="button" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                            <input type="text" class="qty-input" value="{{ item.quantity }}" readonly>
+                            <button class="qty-btn qty-plus" type="button" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        
+                        <div class="cart-item-price" style="text-align: right">
+                            <span class="cart-item-subtotal" style="color: #fff; font-weight:700">${{ item.subtotal }}</span>
+                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px">${{ item.product.price }} each</div>
+                        </div>
+                        
+                        <a href="{% url 'store:remove_from_cart' item.id %}" class="cart-item-remove" style="text-align: center" aria-label="Remove item">
+                            <i class="fa-solid fa-trash-can fa-lg"></i>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Right Column: Cart Totals & Checkout -->
+            <div class="cart-summary-card glass-panel" id="cart-summary-box">
+                <h3 class="summary-title">Order Summary</h3>
+                
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal" style="color:#fff; font-weight:600">${{ subtotal }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span id="cart-shipping" style="color:#fff; font-weight:600">
+                        {% if shipping == 0 %}
+                            FREE
+                        {% else %}
+                            ${{ shipping|floatformat:2 }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 24px; text-align: right">
+                    * Free shipping for orders exceeding $100
+                </div>
+                
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="cart-total">${{ total|floatformat:2 }}</span>
+                </div>
+
+                <div style="margin-top: 32px; display:flex; flex-direction:column; gap:16px">
+                    <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block" id="proceed-checkout-btn"><i class="fa-solid fa-credit-card"></i> Proceed to Checkout</a>
+                    <a href="{% url 'store:product_list' %}" class="btn btn-outline btn-block"><i class="fa-solid fa-arrow-left"></i> Continue Shopping</a>
+                </div>
+            </div>
+            
+        </div>
+    {% else %}
+        <div class="glass-panel" style="padding: 80px 40px; text-align: center" id="empty-cart-state">
+            <i class="fa-solid fa-cart-shopping fa-4x" style="color:var(--text-muted); margin-bottom:24px"></i>
+            <h3 style="color:#fff; font-size:1.5rem; margin-bottom:12px">Your Shopping Cart is Empty</h3>
+            <p style="color:var(--text-secondary); max-width:460px; margin:0 auto 32px">Looks like you haven't added anything to your cart yet. Head over to our catalog to explore some of our finest high-end drops.</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary"><i class="fa-solid fa-bag-shopping"></i> Browse Products</a>
+        </div>
+    {% endif %}
+{% endblock %}

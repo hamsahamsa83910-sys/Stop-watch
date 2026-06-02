@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A premium, highly responsive Weather Web Application featuring 5-day forecasts, real-time AQI, interactive mapping, speech search, dynamic timezones, and beautiful live weather animations.">
+    <title>AetherWeather | Premium Weather Intelligence</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    
+    <!-- Animated Weather Background Canvas -->
+    <canvas id="weather-effects-canvas"></canvas>
+    
+    <!-- Loading Screen -->
+    <div id="loader-overlay" class="loader-overlay active">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-logo">AetherWeather</div>
+            <p class="loader-status">Detecting geolocation and fetching atmospheric details...</p>
+        </div>
+    </div>
+    
+    <!-- Voice Search Listening Overlay -->
+    <div id="voice-overlay" class="voice-overlay">
+        <div class="voice-card">
+            <div class="voice-pulse">
+                <i class="fa-solid fa-microphone"></i>
+            </div>
+            <h3>Listening to Voice Input...</h3>
+            <p id="voice-transcript" class="voice-transcript">"Try saying a city name, like 'Paris' or 'New York'..."</p>
+            <button id="close-voice-btn" class="close-voice-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-wrapper">
+        <!-- Navigation & Search Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-cloud-sun-rain"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>AetherWeather</h1>
+                    <span>Atmospheric Intelligence</span>
+                </div>
+            </div>
+            
+            <div class="search-actions-container">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="city-search-input" placeholder="Search for cities..." autocomplete="off">
+                    <div class="search-buttons-group">
+                        <button id="voice-search-btn" title="Voice Search">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <button id="geolocation-btn" title="Detect Location">
+                            <i class="fa-solid fa-location-crosshairs"></i>
+                        </button>
+                    </div>
+                    <!-- Autocomplete / Search Suggestions List -->
+                    <div id="search-suggestions" class="search-suggestions hidden"></div>
+                </div>
+                
+                <div class="utility-controls">
+                    <!-- Unit Toggle Button -->
+                    <button id="unit-toggle-btn" class="control-btn" title="Toggle Celsius / Fahrenheit">
+                        <span class="unit-label text-active">°C</span>
+                        <span class="unit-divider">/</span>
+                        <span class="unit-label">°F</span>
+                    </button>
+                    
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle-btn" class="control-btn" title="Toggle Light / Dark Mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search History Row -->
+        <section class="recent-searches-row" id="recent-searches-container">
+            <span class="history-title"><i class="fa-solid fa-history"></i> Recent:</span>
+            <div class="history-pills" id="history-pills">
+                <!-- Pills populated by JS -->
+                <span class="no-history-msg">No recent searches yet</span>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Content Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT COLUMN: HERO AREA -->
+            <section class="hero-weather-column">
+                <!-- Current Weather Card -->
+                <div class="hero-weather-card">
+                    <div class="hero-card-header">
+                        <div class="location-details">
+                            <h2 id="hero-city-name" class="city-name">Loading...</h2>
+                            <span id="hero-country-code" class="country-badge">--</span>
+                        </div>
+                        <div class="live-clock-container">
+                            <div class="live-time" id="live-time">00:00:00</div>
+                            <div class="live-date" id="live-date">---, -- --- ----</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-card-body">
+                        <div class="weather-visual-block">
+                            <!-- Premium custom animated weather icons (SVG/HTML format) -->
+                            <div class="weather-icon-wrapper" id="weather-anim-icon">
+                                <div class="premium-weather-icon shiny-sun">
+                                    <div class="sun-core"></div>
+                                    <div class="sun-ray"></div>
+                                </div>
+                            </div>
+                            <div class="weather-temp-container">
+                                <span class="temperature-val" id="hero-temp-val">--</span>
+                                <span class="temperature-unit" id="hero-temp-unit">°C</span>
+                            </div>
+                        </div>
+
+                        <div class="weather-meta-status">
+                            <h3 id="hero-weather-status" class="weather-status-text">Atmospheric Reading</h3>
+                            <p id="hero-weather-description" class="weather-description">Retrieving real-time details from coordinate mesh...</p>
+                        </div>
+                    </div>
+
+                    <div class="hero-card-footer">
+                        <div class="hero-footer-stat">
+                            <i class="fa-solid fa-temperature-half"></i>
+                            <div class="stat-info">
+                                <span>Feels Like</span>
+                                <strong id="feels-like-val">--°C</strong>
+                            </div>
+                        </div>
+                        <div class="hero-footer-stat">
+                            <i class="fa-solid fa-droplet-slash"></i>
+                            <div class="stat-info">
+                                <span>Precipitation</span>
+                                <strong id="precipitation-chance-val">--%</strong>
+                            </div>
+                        </div>
+                        <div class="hero-footer-stat">
+                            <i class="fa-solid fa-cloud"></i>
+                            <div class="stat-info">
+                                <span>Cloud Cover</span>
+                                <strong id="cloud-cover-val">--%</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 5-Day Weather Forecast Widget -->
+                <div class="forecast-card">
+                    <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> 5-Day Forecast</h3>
+                    <div class="daily-forecast-list" id="daily-forecast-list">
+                        <!-- Daily elements generated dynamically -->
+                        <div class="forecast-placeholder">Loading 5-day projections...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: DETAILED STATS GRID -->
+            <section class="detailed-highlights-column">
+                
+                <!-- Atmosphere & Core Stats Grid -->
+                <div class="highlights-grid">
+                    <!-- 1. Air Quality Index (AQI) -->
+                    <div class="highlight-card aqi-card">
+                        <div class="highlight-card-header">
+                            <h4>Air Quality Index (AQI)</h4>
+                            <span class="aqi-status-badge good" id="aqi-badge">Good</span>
+                        </div>
+                        <div class="aqi-card-body">
+                            <div class="aqi-main-metric">
+                                <span class="aqi-number" id="aqi-val">--</span>
+                                <div class="aqi-rating-details">
+                                    <span class="aqi-label">US-AQI Status</span>
+                                    <p id="aqi-summary-desc">Clean atmospheric structure. Perfect for outdoor activities.</p>
+                                </div>
+                            </div>
+                            <div class="aqi-slider-container">
+                                <div class="aqi-track">
+                                    <div class="aqi-indicator" id="aqi-indicator" style="left: 0%"></div>
+                                </div>
+                                <div class="aqi-ranges">
+                                    <span>0</span>
+                                    <span>50</span>
+                                    <span>100</span>
+                                    <span>150</span>
+                                    <span>200</span>
+                                    <span>300+</span>
+                                </div>
+                            </div>
+                            <div class="pollutants-breakdown">
+                                <div class="pollutant-item">
+                                    <span>PM<sub>2.5</sub></span>
+                                    <strong id="pm25-val">-- µg/m³</strong>
+                                </div>
+                                <div class="pollutant-item">
+                                    <span>PM<sub>10</sub></span>
+                                    <strong id="pm10-val">-- µg/m³</strong>
+                                </div>
+                                <div class="pollutant-item">
+                                    <span>NO<sub>2</sub></span>
+                                    <strong id="no2-val">-- µg/m³</strong>
+                                </div>
+                                <div class="pollutant-item">
+                                    <span>O<sub>3</sub></span>
+                                    <strong id="o3-val">-- µg/m³</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Sunrise & Sunset -->
+                    <div class="highlight-card sunrise-sunset-card">
+                        <div class="highlight-card-header">
+                            <h4>Sunrise & Sunset</h4>
+                        </div>
+                        <div class="sunrise-sunset-body">
+                            <div class="sun-arc-wrapper">
+                                <svg class="sun-arc-svg" viewBox="0 0 100 50">
+                                    <!-- Sunset Path -->
+                                    <path d="M 5,45 A 40,40 0 0,1 95,45" fill="none" class="arc-track" stroke-dasharray="4,4"/>
+                                    <!-- Sun Progression Filled Path -->
+                                    <path d="M 5,45 A 40,40 0 0,1 95,45" fill="none" class="arc-progress" id="sun-arc-progress" stroke-dasharray="142" stroke-dashoffset="142"/>
+                                    <!-- Sun Indicator Node -->
+                                    <circle cx="5" cy="45" r="4" class="sun-node" id="sun-node-circle"/>
+                                    <!-- Horizon Line -->
+                                    <line x1="0" y1="45" x2="100" y2="45" class="horizon-line"/>
+                                </svg>
+                            </div>
+                            <div class="sunrise-sunset-times">
+                                <div class="time-node sunrise">
+                                    <i class="fa-solid fa-circle-up sunrise-icon"></i>
+                                    <div class="time-node-meta">
+                                        <span>Sunrise</span>
+                                        <strong id="sunrise-time">--:-- AM</strong>
+                                    </div>
+                                </div>
+                                <div class="time-node sunset">
+                                    <i class="fa-solid fa-circle-down sunset-icon"></i>
+                                    <div class="time-node-meta">
+                                        <span>Sunset</span>
+                                        <strong id="sunset-time">--:-- PM</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="daylight-duration" id="daylight-duration-label">
+                                Daylight Duration: --h --m
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Wind Direction & Speed -->
+                    <div class="highlight-card wind-card">
+                        <div class="highlight-card-header">
+                            <h4>Wind & Dynamics</h4>
+                        </div>
+                        <div class="wind-body">
+                            <div class="compass-wrapper">
+                                <div class="compass-dial">
+                                    <span class="compass-dir north">N</span>
+                                    <span class="compass-dir east">E</span>
+                                    <span class="compass-dir south">S</span>
+                                    <span class="compass-dir west">W</span>
+                                    <div class="compass-needle" id="wind-compass-needle" style="transform: rotate(0deg)">
+                                        <div class="needle-north"></div>
+                                        <div class="needle-south"></div>
+                                    </div>
+                                    <div class="compass-core"></div>
+                                </div>
+                            </div>
+                            <div class="wind-metrics">
+                                <div class="wind-stat">
+                                    <span>Wind Speed</span>
+                                    <strong id="wind-speed-val">-- km/h</strong>
+                                </div>
+                                <div class="wind-stat">
+                                    <span>Direction</span>
+                                    <strong id="wind-direction-degrees">--° NNE</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Humidity & Comfort -->
+                    <div class="highlight-card humidity-card">
+                        <div class="highlight-card-header">
+                            <h4>Humidity & Comfort</h4>
+                        </div>
+                        <div class="humidity-body">
+                            <div class="circular-progress-wrapper">
+                                <svg class="progress-svg" viewBox="0 0 100 100">
+                                    <circle class="circle-bg" cx="50" cy="50" r="40"/>
+                                    <circle class="circle-fill" id="humidity-progress-circle" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="251"/>
+                                </svg>
+                                <div class="progress-content">
+                                    <span id="humidity-pct-val">--%</span>
+                                </div>
+                            </div>
+                            <div class="humidity-metrics">
+                                <div class="humidity-stat">
+                                    <span>Dew Point</span>
+                                    <strong id="dew-point-val">--°C</strong>
+                                </div>
+                                <div class="humidity-stat">
+                                    <span>Status</span>
+                                    <strong id="humidity-comfort-status">Comfortable</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Barometric Pressure -->
+                    <div class="highlight-card pressure-card">
+                        <div class="highlight-card-header">
+                            <h4>Barometric Pressure</h4>
+                        </div>
+                        <div class="pressure-body">
+                            <div class="pressure-gauge-wrapper">
+                                <div class="gauge-dial">
+                                    <div class="gauge-needle" id="pressure-needle" style="transform: rotate(0deg)"></div>
+                                    <div class="gauge-center"></div>
+                                </div>
+                                <div class="gauge-labels">
+                                    <span>960</span>
+                                    <span>1013</span>
+                                    <span>1060</span>
+                                </div>
+                            </div>
+                            <div class="pressure-metrics">
+                                <span class="pressure-number" id="pressure-val">-- hPa</span>
+                                <span class="pressure-label" id="pressure-trend-label">Standard Barometric Index</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Additional Parameters (UV Index, Visibility) -->
+                    <div class="highlight-card env-details-card">
+                        <div class="highlight-card-header">
+                            <h4>Atmospheric Details</h4>
+                        </div>
+                        <div class="env-details-body">
+                            <div class="detail-row">
+                                <div class="detail-col">
+                                    <i class="fa-solid fa-sun-plant-wilt"></i>
+                                    <div class="detail-label-block">
+                                        <span>UV Index Max</span>
+                                        <strong id="uv-index-val">--</strong>
+                                    </div>
+                                </div>
+                                <div class="detail-col">
+                                    <i class="fa-solid fa-eye"></i>
+                                    <div class="detail-label-block">
+                                        <span>Visibility</span>
+                                        <strong id="visibility-val">-- km</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-summary-strip" id="uv-safety-label">
+                                UV Exposure Risk: Negligible
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hourly Forecast Slider -->
+                <div class="hourly-forecast-card">
+                    <div class="hourly-card-header">
+                        <h3><i class="fa-solid fa-clock"></i> Hourly Wind & Temperature (Next 24h)</h3>
+                        <div class="hourly-slider-indicators">
+                            <span>Scroll horizontally <i class="fa-solid fa-arrow-right-long"></i></span>
+                        </div>
+                    </div>
+                    <div class="hourly-forecast-list" id="hourly-forecast-list">
+                        <!-- Populated by JS -->
+                        <div class="forecast-placeholder">Retrieving hourly metrics...</div>
+                    </div>
+                </div>
+
+                <!-- Leaflet Interactive Map Card -->
+                <div class="map-card-wrapper">
+                    <div class="map-card-header">
+                        <h3><i class="fa-solid fa-map-location-dot"></i> Interactive Weather Mesh Map</h3>
+                        <span id="map-coordinates-label" class="map-coordinates">Lat: --.--- | Lon: --.---</span>
+                    </div>
+                    <div id="map-container" class="map-container"></div>
+                </div>
+
+            </section>
+
+        </main>
+        
+        <!-- App Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 AetherWeather Systems. Created with passion for precision weather forecasting.</p>
+            <p class="api-credits">Atmospheric data delivered by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> &bull; Geocoding by Open-Meteo Integration</p>
+        </footer>
+    </div>
+
+    <!-- Error Toast Notification -->
+    <div id="error-toast" class="error-toast">
+        <i class="fa-solid fa-triangle-exclamation toast-icon"></i>
+        <div class="toast-body">
+            <strong id="error-title">Location Error</strong>
+            <p id="error-message">The specified coordinates or city could not be parsed.</p>
+        </div>
+        <button id="close-toast-btn" class="close-toast-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>

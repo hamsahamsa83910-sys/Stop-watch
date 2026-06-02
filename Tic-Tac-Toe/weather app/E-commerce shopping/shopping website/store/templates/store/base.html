@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AetherStore | Premium Dark E-Commerce{% endblock %}</title>
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Explore AetherStore - the ultimate luxury dark-themed shopping experience for high-end digital catalog items and products.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'store/css/style.css' %}">
+    
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="{% url 'store:home' %}" class="brand" id="nav-brand">
+                <i class="fa-solid fa-cube"></i> AETHER<span style="color:var(--accent-secondary)">STORE</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-links" id="nav-links">
+                    <li><a href="{% url 'store:home' %}" class="nav-link {% if request.resolver_match.view_name == 'store:home' %}active{% endif %}">Home</a></li>
+                    <li><a href="{% url 'store:product_list' %}" class="nav-link {% if request.resolver_match.view_name == 'store:product_list' %}active{% endif %}">Shop</a></li>
+                    {% if request.user.is_authenticated %}
+                        <li><a href="{% url 'store:dashboard' %}" class="nav-link {% if request.resolver_match.view_name == 'store:dashboard' %}active{% endif %}">Dashboard</a></li>
+                        {% if request.user.is_staff or request.user.is_superuser %}
+                            <li><a href="{% url 'store:admin_dashboard' %}" class="nav-link {% if request.resolver_match.view_name == 'store:admin_dashboard' %}active{% endif %}" style="color:var(--accent-secondary)"><i class="fa-solid fa-user-shield"></i> Custom Admin</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'store:logout' %}" class="nav-link">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'store:login' %}" class="nav-link {% if request.resolver_match.view_name == 'store:login' %}active{% endif %}">Login</a></li>
+                        <li><a href="{% url 'store:register' %}" class="nav-link {% if request.resolver_match.view_name == 'store:register' %}active{% endif %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="{% url 'store:cart' %}" class="cart-icon-wrapper" id="header-cart-icon">
+                    <i class="fa-solid fa-cart-shopping fa-lg" style="color: var(--text-primary)"></i>
+                    <span class="cart-badge">{{ cart_count }}</span>
+                </a>
+                
+                <button class="burger-menu" id="burger-menu" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4 style="font-family:var(--font-heading); font-weight:800; font-size:1.4rem; color:#fff"><i class="fa-solid fa-cube"></i> AETHERSTORE</h4>
+                    <p style="margin-top:16px; font-size:0.9rem">Modern full-stack E-Commerce platform built with Django backend and vanilla glassmorphism CSS layout. Experience premium aesthetic shopping.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Categories</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'store:product_list' %}">All Catalog</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=electronics">Electronics</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=apparel">Apparel</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Customer Care</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Shipping Details</a></li>
+                        <li><a href="#">Returns & Exchanges</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Newsletter</h4>
+                    <p style="font-size:0.9rem; margin-bottom:16px">Subscribe to receive exclusive deals and new drop alerts.</p>
+                    <div style="display:flex; gap:8px">
+                        <input type="email" placeholder="Email Address" class="form-input" style="padding: 8px 12px; font-size: 0.85rem">
+                        <button class="btn btn-primary btn-sm" style="padding: 8px 16px"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 AetherStore. Developed with pride.</p>
+                <div style="display:flex; gap:16px">
+                    <a href="#"><i class="fa-brands fa-github fa-lg"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter fa-lg"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript File -->
+    <script src="{% static 'store/js/main.js' %}"></script>
+    
+    <!-- Render Django Message System via JS Toast Notifications -->
+    <script>
+        {% if messages %}
+            {% for message in messages %}
+                window.showToast("{{ message|escapejs }}", "{{ message.tags }}");
+            {% endfor %}
+        {% endif %}
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

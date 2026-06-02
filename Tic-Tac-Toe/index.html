@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmic Tic-Tac-Toe | Voice-Controlled Multi-Grid Board</title>
+  <meta name="description" content="An advanced Tic-Tac-Toe game supporting 3x3, 4x4, 5x5, and 6x6 grids. Control with your voice, toggle synthesized ambient music, choose premium themes, and compete on local leaderboards.">
+  
+  <!-- Google Fonts for futuristic, modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-nebula">
+  <!-- Ambient background glow particles -->
+  <div class="ambient-glow primary-glow" aria-hidden="true"></div>
+  <div class="ambient-glow secondary-glow" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <header class="app-header">
+      <h1 class="logo">COSMIC <span>TIC-TAC-TOE</span></h1>
+      <p class="subtitle">Voice-controlled, dynamic grid sizes, local statistics, and retro synths</p>
+    </header>
+
+    <main class="main-content">
+      <!-- SETUP SCREEN -->
+      <section id="setup-screen" class="glass-card fade-in">
+        <h2 class="section-title">Configure Match</h2>
+        
+        <!-- Theme Selection -->
+        <div class="form-group">
+          <label for="theme-selector" class="input-label">Select Visual Theme</label>
+          <select id="theme-selector" class="select-input">
+            <option value="theme-nebula">Nebula Dark (Cyan & Pink)</option>
+            <option value="theme-supernova">Supernova Gold (Amber & Violet)</option>
+            <option value="theme-cyberpunk">Cyberpunk Grid (Green & Orange)</option>
+            <option value="theme-arcade">Retro Arcade (Yellow & Red)</option>
+            <option value="theme-aurora">Aurora Frost (Light Mode Teal & Coral)</option>
+          </select>
+        </div>
+
+        <!-- Grid Size Selection -->
+        <div class="form-group">
+          <label class="input-label">Select Board Size</label>
+          <div class="grid-size-group">
+            <button type="button" class="btn btn-grid-size active" data-size="3">3 x 3</button>
+            <button type="button" class="btn btn-grid-size" data-size="4">4 x 4</button>
+            <button type="button" class="btn btn-grid-size" data-size="5">5 x 5</button>
+            <button type="button" class="btn btn-grid-size" data-size="6">6 x 6</button>
+          </div>
+          <span class="info-label" id="win-condition-info">Requires 3 in a row to win</span>
+        </div>
+
+        <!-- Game Mode Selection -->
+        <div class="form-group">
+          <label class="input-label">Select Game Mode</label>
+          <div class="mode-toggle-group">
+            <button type="button" id="btn-mode-pvp" class="btn btn-toggle active">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              Player vs Player
+            </button>
+            <button type="button" id="btn-mode-ai" class="btn btn-toggle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M12 2v2"></path><line x1="12" y1="4" x2="12" y2="11"></line><path d="M12 11V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v7"></path><circle cx="8" cy="16" r="1"></circle><circle cx="16" cy="16" r="1"></circle></svg>
+              Player vs AI
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Difficulty (Hidden by default) -->
+        <div id="ai-difficulty-container" class="form-group hidden">
+          <label class="input-label">AI Difficulty Level</label>
+          <div class="difficulty-group">
+            <button type="button" id="btn-diff-easy" class="btn btn-outline active" data-difficulty="easy">Easy</button>
+            <button type="button" id="btn-diff-medium" class="btn btn-outline" data-difficulty="medium">Medium</button>
+            <button type="button" id="btn-diff-hard" class="btn btn-outline" data-difficulty="hard">Unbeatable</button>
+          </div>
+        </div>
+
+        <!-- Player Name Inputs -->
+        <div class="name-inputs-container">
+          <div class="form-field">
+            <label for="player1-name" class="input-label">Player 1 (X)</label>
+            <input type="text" id="player1-name" placeholder="Cosmo" maxlength="12" value="Player 1">
+          </div>
+          <div class="form-field" id="p2-name-field">
+            <label for="player2-name" class="input-label">Player 2 (O)</label>
+            <input type="text" id="player2-name" placeholder="Nova" maxlength="12" value="Player 2">
+          </div>
+        </div>
+
+        <!-- Start Button -->
+        <button type="button" id="btn-start-game" class="btn btn-primary btn-block">
+          Launch Match
+        </button>
+      </section>
+
+      <!-- GAMEPLAY SCREEN (Hidden by default) -->
+      <section id="game-screen" class="glass-card fade-in hidden">
+        <!-- Dashboard / Controls -->
+        <div class="game-dashboard">
+          <div class="turn-indicator" id="turn-indicator-box">
+            Turn: <span id="current-player-display" class="player-x-text">Player 1</span>
+          </div>
+          
+          <div class="header-controls">
+            <!-- Voice Recognition Button -->
+            <button id="btn-voice-toggle" class="btn-icon" aria-label="Toggle Voice Control" title="Voice Commands (Click to toggle)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            </button>
+
+            <!-- Background Music Button -->
+            <button id="btn-music-toggle" class="btn-icon" aria-label="Toggle Background Music" title="Background Music">
+              <svg id="icon-music-on" class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              <svg id="icon-music-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+
+            <!-- Sound Effects Button -->
+            <button id="btn-sound-toggle" class="btn-icon" aria-label="Toggle Sound Effects" title="Sound Effects">
+              <svg id="icon-sound-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+              <svg id="icon-sound-off" class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Voice Command Feedback Panel -->
+        <div id="voice-status-panel" class="voice-panel hidden">
+          <div class="mic-wave" id="mic-wave">
+            <span></span><span></span><span></span>
+          </div>
+          <p id="voice-transcript">Speech Recognition active. Say "cell 1" or "row 2 column 3"...</p>
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+          <div class="score-card player-x" id="score-card-x">
+            <div class="score-label" id="score-label-x">Player 1 (X)</div>
+            <div class="score-val" id="score-val-x">0</div>
+          </div>
+          <div class="score-card draw-card">
+            <div class="score-label">Draws</div>
+            <div class="score-val" id="score-val-draw">0</div>
+          </div>
+          <div class="score-card player-o" id="score-card-o">
+            <div class="score-label" id="score-label-o">Player 2 (O)</div>
+            <div class="score-val" id="score-val-o">0</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Tic-Tac-Toe Grid & Confetti Canvas Overlay -->
+        <div class="board-container">
+          <canvas id="confetti-canvas"></canvas>
+          <div class="grid-board" id="game-board" role="grid" aria-label="Tic-Tac-Toe Board" style="--grid-cols: 3;">
+            <!-- Rendered dynamically in app.js -->
+          </div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+          <button type="button" id="btn-reset-round" class="btn btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+            Next Round
+          </button>
+          <button type="button" id="btn-change-setup" class="btn btn-outline">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            New Game Setup
+          </button>
+        </div>
+      </section>
+
+      <!-- STATISTICS, LEADERBOARD, HISTORY SECTION -->
+      <section class="stats-panel glass-card">
+        <div class="tabs-header">
+          <button class="tab-btn active" data-tab="tab-leaderboard">Leaderboard</button>
+          <button class="tab-btn" data-tab="tab-history">Match History</button>
+        </div>
+
+        <div class="tabs-content">
+          <!-- Leaderboard Tab -->
+          <div id="tab-leaderboard" class="tab-pane active">
+            <div class="table-container">
+              <table id="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Played</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Draws</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-tbody">
+                  <!-- Injected via JavaScript -->
+                  <tr>
+                    <td colspan="6" class="placeholder-row">No leaderboard stats recorded yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Match History Tab -->
+          <div id="tab-history" class="tab-pane">
+            <div class="history-list" id="history-log-list">
+              <!-- Injected via JavaScript -->
+              <p class="placeholder-text">No matches logged yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="btn-clear-stats" class="btn btn-outline btn-danger btn-block" style="margin-top: 16px;">
+          Clear Logs & Stats
+        </button>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Nebula Games &copy; 2026. Custom Themes & Synthesized Space FX.</p>
+    </footer>
+  </div>
+
+  <!-- Game Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

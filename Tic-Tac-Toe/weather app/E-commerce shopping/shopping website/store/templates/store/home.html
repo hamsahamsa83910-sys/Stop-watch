@@ -1,0 +1,115 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Home | AetherStore - Premium Dark E-Commerce{% endblock %}
+
+{% block content %}
+    <!-- Premium Hero Header -->
+    <section class="hero glass-panel" id="hero-banner">
+        <div class="hero-content">
+            <span class="hero-subtitle">NEXT-GEN SHOPPING EXPERIENCE</span>
+            <h1>The Future of E-Commerce</h1>
+            <p>Elevate your collection with our meticulously curated premium products. Immerse yourself in a visually stunning dark mode storefront with seamless navigation.</p>
+            <div style="display:flex; gap:16px; flex-wrap:wrap">
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary" id="hero-shop-btn"><i class="fa-solid fa-bag-shopping"></i> Shop Catalog</a>
+                {% if not request.user.is_authenticated %}
+                    <a href="{% url 'store:register' %}" class="btn btn-outline">Join Membership</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Features Showcase -->
+    <section style="margin-bottom: 56px">
+        <div class="stats-grid">
+            <div class="stat-card glass-panel" style="align-items:center; text-align:center; padding: 20px">
+                <i class="fa-solid fa-truck-fast fa-2x" style="color:var(--accent-secondary); margin-bottom:12px"></i>
+                <h4 style="color:#fff; margin-bottom:4px">Free Global Shipping</h4>
+                <p style="font-size:0.8rem; color:var(--text-secondary)">On all orders exceeding $100</p>
+            </div>
+            <div class="stat-card glass-panel" style="align-items:center; text-align:center; padding: 20px">
+                <i class="fa-solid fa-shield-halved fa-2x" style="color:var(--accent-primary); margin-bottom:12px"></i>
+                <h4 style="color:#fff; margin-bottom:4px">Secure Checkout</h4>
+                <p style="font-size:0.8rem; color:var(--text-secondary)">Fully encrypted 256-bit payments</p>
+            </div>
+            <div class="stat-card glass-panel" style="align-items:center; text-align:center; padding: 20px">
+                <i class="fa-solid fa-rotate-left fa-2x" style="color:var(--accent-secondary); margin-bottom:12px"></i>
+                <h4 style="color:#fff; margin-bottom:4px">30-Day Guarantee</h4>
+                <p style="font-size:0.8rem; color:var(--text-secondary)">Hassle-free refunds and returns</p>
+            </div>
+            <div class="stat-card glass-panel" style="align-items:center; text-align:center; padding: 20px">
+                <i class="fa-solid fa-headset fa-2x" style="color:var(--accent-primary); margin-bottom:12px"></i>
+                <h4 style="color:#fff; margin-bottom:4px">24/7 Live Support</h4>
+                <p style="font-size:0.8rem; color:var(--text-secondary)">Always here when you need us</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase Categories -->
+    <section>
+        <h2 class="section-title">Explore Categories</h2>
+        <div class="grid-categories">
+            {% if categories %}
+                {% for category in categories %}
+                    <a href="{% url 'store:product_list' %}?category={{ category.slug }}" class="category-card glass-panel" id="category-{{ category.slug }}">
+                        <div class="category-icon">
+                            {% if category.slug == 'electronics' %}
+                                <i class="fa-solid fa-laptop"></i>
+                            {% elif category.slug == 'apparel' or category.slug == 'clothing' %}
+                                <i class="fa-solid fa-shirt"></i>
+                            {% elif category.slug == 'accessories' %}
+                                <i class="fa-solid fa-glasses"></i>
+                            {% else %}
+                                <i class="fa-solid fa-box-open"></i>
+                            {% endif %}
+                        </div>
+                        <h3>{{ category.name }}</h3>
+                        <p style="color:var(--text-secondary); font-size:0.8rem; margin-top:8px">View Collection <i class="fa-solid fa-chevron-right fa-xs"></i></p>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="category-card glass-panel" style="grid-column: 1 / -1; min-height: 120px">
+                    <p style="color:var(--text-secondary)">No categories available at this moment. Populating soon!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Trending Showcase -->
+    <section>
+        <h2 class="section-title">Latest & Trending Drops</h2>
+        <div class="grid-products">
+            {% if featured_products %}
+                {% for product in featured_products %}
+                    <div class="product-card glass-panel" id="product-card-{{ product.id }}">
+                        <div class="product-img-wrapper">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                            {% else %}
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#120e24; color:var(--text-muted)">
+                                    <i class="fa-regular fa-image fa-3x"></i>
+                                </div>
+                            {% endif %}
+                            <span class="product-badge">New Drop</span>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">{{ product.category.name }}</span>
+                            <h3 class="product-title"><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                            <div class="product-bottom">
+                                <span class="product-price">${{ product.price }}</span>
+                                <button class="add-to-cart-btn-round ajax-add-to-cart" data-product-id="{{ product.id }}" aria-label="Add to cart">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="glass-panel" style="grid-column: 1 / -1; padding: 48px; text-align: center">
+                    <i class="fa-solid fa-bag-shopping fa-3x" style="color:var(--text-muted); margin-bottom:16px"></i>
+                    <p style="color:var(--text-secondary); font-size:1.1rem">Our shelves are temporarily empty. Check back very soon!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

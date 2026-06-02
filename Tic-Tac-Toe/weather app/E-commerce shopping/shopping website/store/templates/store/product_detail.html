@@ -1,0 +1,95 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} | AetherStore{% endblock %}
+
+{% block content %}
+    <div class="detail-layout">
+        
+        <!-- Left Column: Product Image -->
+        <div class="detail-img-container glass-panel">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="detail-img" id="detail-product-img">
+            {% else %}
+                <div style="font-size: 5rem; color: var(--text-muted)">
+                    <i class="fa-regular fa-image"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Product Info & Buy Action -->
+        <div class="detail-info">
+            <span class="detail-category">{{ product.category.name }}</span>
+            <h1 class="detail-title">{{ product.name }}</h1>
+            
+            <div class="detail-price">
+                <span>${{ product.price }}</span>
+                {% if product.stock > 0 %}
+                    <span class="stock-status stock-in"><i class="fa-solid fa-circle-check"></i> In Stock ({{ product.stock }} available)</span>
+                {% else %}
+                    <span class="stock-status stock-out"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <p class="detail-desc">{{ product.description|default:"No description has been provided for this product yet. Keep an eye out for updates!" }}</p>
+
+            {% if product.stock > 0 %}
+                <div class="qty-selector-wrapper">
+                    <span class="qty-label">Quantity:</span>
+                    <div class="qty-control" data-product-id="{{ product.id }}">
+                        <button class="qty-btn qty-minus" type="button" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                        <input type="text" id="detail-qty-input" class="qty-input" value="1" readonly>
+                        <button class="qty-btn qty-plus" type="button" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:16px; margin-bottom:32px">
+                    <button class="btn btn-primary btn-block ajax-add-to-cart" data-product-id="{{ product.id }}" id="add-to-cart-action">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
+                </div>
+            {% else %}
+                <button class="btn btn-secondary btn-block" style="cursor:not-allowed; opacity:0.5; margin-bottom:32px" disabled>
+                    <i class="fa-solid fa-envelope"></i> Notify Me When Restocked
+                </button>
+            {% endif %}
+            
+            <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:24px; display:flex; flex-direction:column; gap:12px; font-size:0.9rem; color:var(--text-secondary)">
+                <div><i class="fa-solid fa-shield-halved" style="color:var(--accent-secondary); margin-right:8px"></i> Authenticity guaranteed or 100% money back.</div>
+                <div><i class="fa-solid fa-truck" style="color:var(--accent-secondary); margin-right:8px"></i> Dispatched within 24 hours of successful payment.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products Cross-selling -->
+    {% if related_products %}
+        <section style="margin-top: 64px">
+            <h2 class="section-title">Customers Also Viewed</h2>
+            <div class="grid-products">
+                {% for prod in related_products %}
+                    <div class="product-card glass-panel" id="related-card-{{ prod.id }}">
+                        <div class="product-img-wrapper">
+                            {% if prod.image %}
+                                <img src="{{ prod.image.url }}" alt="{{ prod.name }}" class="product-img">
+                            {% else %}
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#120e24; color:var(--text-muted)">
+                                    <i class="fa-regular fa-image fa-2x"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <span class="product-category">{{ prod.category.name }}</span>
+                            <h3 class="product-title"><a href="{% url 'store:product_detail' prod.slug %}">{{ prod.name }}</a></h3>
+                            <div class="product-bottom">
+                                <span class="product-price">${{ prod.price }}</span>
+                                <button class="add-to-cart-btn-round ajax-add-to-cart" data-product-id="{{ prod.id }}" aria-label="Add to cart">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}

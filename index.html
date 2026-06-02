@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyan" data-color-scheme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether StopWatch - High Precision Timer</title>
+  <!-- Google Fonts: Outfit for sleek typography, JetBrains Mono for monospace numbers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Decorative background elements -->
+  <div class="glass-bg-decor circles">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- TOP TOOLBAR -->
+    <div class="toolbar">
+      <!-- Mode Toggle Switch (Stopwatch / Countdown) -->
+      <div class="mode-select-container">
+        <button id="mode-stopwatch" class="mode-btn active" title="Switch to Stopwatch">Stopwatch</button>
+        <button id="mode-countdown" class="mode-btn" title="Switch to Countdown">Countdown</button>
+      </div>
+
+      <!-- Settings Panel Controls -->
+      <div class="settings-controls">
+        <!-- Voice Command Button -->
+        <button id="btn-toggle-voice" class="settings-btn" title="Toggle Voice Control">
+          <svg class="icon-mic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+            <line x1="12" x2="12" y1="19" y2="22"/>
+          </svg>
+        </button>
+
+        <!-- Sound Effects Toggle -->
+        <button id="btn-toggle-sound" class="settings-btn active" title="Toggle Sound Effects">
+          <svg class="icon-volume-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+          <svg class="icon-volume-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="22" y1="9" x2="16" y2="15"/>
+            <line x1="16" y1="9" x2="22" y2="15"/>
+          </svg>
+        </button>
+
+        <!-- Light/Dark Mode Switcher -->
+        <button id="btn-toggle-scheme" class="settings-btn" title="Switch Theme Mode">
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2"/>
+            <path d="M12 20v2"/>
+            <path d="m4.93 4.93 1.41 1.41"/>
+            <path d="m17.66 17.66 1.41 1.41"/>
+            <path d="M2 12h2"/>
+            <path d="M20 12h2"/>
+            <path d="m6.34 17.66-1.41 1.41"/>
+            <path d="m19.07 4.93-1.41 1.41"/>
+          </svg>
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- VOICE FEEDBACK BAR -->
+    <div id="voice-status-bar" class="voice-status-bar" style="display: none;">
+      <span class="pulse-indicator"></span>
+      <span id="voice-status-text">Voice Control Active (Say "Start", "Pause", "Lap", "Reset")</span>
+    </div>
+
+    <!-- APP HEADER -->
+    <header class="app-header">
+      <div class="header-top">
+        <!-- Logo -->
+        <div class="logo">
+          <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <h1>Aether<span>Watch</span></h1>
+        </div>
+
+        <!-- Theme Color Swatches -->
+        <div class="theme-switcher">
+          <button class="theme-btn active" data-theme-select="cyan" title="Cyan Theme" style="--theme-accent: #00f2fe;"></button>
+          <button class="theme-btn" data-theme-select="violet" title="Violet Theme" style="--theme-accent: #a855f7;"></button>
+          <button class="theme-btn" data-theme-select="emerald" title="Emerald Theme" style="--theme-accent: #10b981;"></button>
+          <button class="theme-btn" data-theme-select="crimson" title="Crimson Theme" style="--theme-accent: #f43f5e;"></button>
+        </div>
+      </div>
+      <p class="subtitle" id="app-subtitle">High-precision microsecond-accurate stopwatch</p>
+    </header>
+
+    <main class="main-content">
+      <!-- Countdown Dial Selector UI -->
+      <section class="countdown-settings-section" id="countdown-settings" style="display: none;">
+        <div class="countdown-pickers">
+          <div class="picker-column">
+            <button class="picker-adjust" data-adjust="hours" data-dir="up">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div class="picker-value"><span id="picker-h">00</span><label>hrs</label></div>
+            <button class="picker-adjust" data-adjust="hours" data-dir="down">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+          <div class="picker-divider">:</div>
+          <div class="picker-column">
+            <button class="picker-adjust" data-adjust="minutes" data-dir="up">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div class="picker-value"><span id="picker-m">00</span><label>min</label></div>
+            <button class="picker-adjust" data-adjust="minutes" data-dir="down">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+          <div class="picker-divider">:</div>
+          <div class="picker-column">
+            <button class="picker-adjust" data-adjust="seconds" data-dir="up">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div class="picker-value"><span id="picker-s">00</span><label>sec</label></div>
+            <button class="picker-adjust" data-adjust="seconds" data-dir="down">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stopwatch Visual Display -->
+      <section class="timer-section">
+        <div class="timer-wrapper">
+          <!-- Circular Progress SVG -->
+          <svg class="progress-ring" width="320" height="320" viewBox="0 0 320 320">
+            <defs>
+              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--color-primary)" />
+                <stop offset="100%" stop-color="var(--color-secondary)" />
+              </linearGradient>
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            <!-- Background Ring -->
+            <circle class="progress-ring-bg" cx="160" cy="160" r="142" />
+            <!-- Animated Front Ring -->
+            <circle id="progressCircle" class="progress-ring-active" cx="160" cy="160" r="142" />
+          </svg>
+
+          <!-- Inner Clock Display -->
+          <div class="timer-inner">
+            <div class="time-readout">
+              <span id="time-hours">00</span><span class="colon">:</span><span id="time-minutes">00</span><span class="colon">:</span><span id="time-seconds">00</span><span class="dot">.</span><span id="time-ms" class="ms">00</span>
+            </div>
+            <div class="timer-stats">
+              <span id="current-lap-label">LAP 1</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Controls -->
+      <section class="controls-section">
+        <!-- Lap / Reset Button -->
+        <button id="btn-lap-reset" class="control-btn secondary-btn" disabled>
+          <span class="btn-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+          </span>
+          <span id="btn-lap-reset-text">Reset</span>
+        </button>
+
+        <!-- Start / Pause Button -->
+        <button id="btn-start-pause" class="control-btn primary-btn play-state">
+          <span class="btn-icon icon-play">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="6 3 20 12 6 21 6 3"/>
+            </svg>
+          </span>
+          <span class="btn-icon icon-pause" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+            </svg>
+          </span>
+          <span id="btn-start-pause-text">Start</span>
+        </button>
+      </section>
+
+      <!-- Lap Analytics Canvas Section -->
+      <section class="chart-section" id="chart-section" style="display: none;">
+        <div class="chart-header">
+          <h2>Lap Analytics</h2>
+          <span class="chart-trend" id="chart-trend-tag">Steady</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="analytics-canvas" height="110"></canvas>
+        </div>
+      </section>
+
+      <!-- Lap Times Table -->
+      <section class="laps-section" id="laps-section-card">
+        <div class="laps-header-bar">
+          <div class="laps-header-left">
+            <h2>Recorded Laps</h2>
+            <span class="lap-count" id="lap-counter-tag">0 Laps</span>
+          </div>
+          <!-- Export Action Buttons -->
+          <div class="laps-action-bar" id="laps-action-bar" style="display: none;">
+            <button id="btn-export-csv" class="action-btn" title="Export Laps as CSV">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              CSV
+            </button>
+            <button id="btn-copy-laps" class="action-btn" title="Copy Laps to Clipboard">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        
+        <div class="laps-table-container">
+          <table class="laps-table" id="laps-table">
+            <thead>
+              <tr>
+                <th>Lap</th>
+                <th>Lap Time</th>
+                <th>Total Time</th>
+              </tr>
+            </thead>
+            <tbody id="laps-list">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+          <div class="laps-empty-state" id="laps-empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 8v4l3 3"/>
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+            <p id="laps-empty-text">Press "Lap" while the stopwatch is running to record intervals.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SESSION STATISTICS SECTION -->
+      <section class="stats-section" id="stats-section" style="display: none;">
+        <h2>Session Statistics</h2>
+        <div class="stats-grid">
+          <div class="stats-card">
+            <span class="stats-val" id="stats-avg-lap">0.00s</span>
+            <span class="stats-label">Avg Lap Time</span>
+          </div>
+          <div class="stats-card">
+            <span class="stats-val" id="stats-fastest">0.00s</span>
+            <span class="stats-label">Fastest Lap</span>
+          </div>
+          <div class="stats-card">
+            <span class="stats-val" id="stats-slowest">0.00s</span>
+            <span class="stats-label">Slowest Lap</span>
+          </div>
+          <div class="stats-card">
+            <span class="stats-val" id="stats-deviation">&plusmn; 0.0s</span>
+            <span class="stats-label">Consistency (Std Dev)</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>&copy; 2026 AetherWatch. Fluid Performance. Microsecond Precision.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

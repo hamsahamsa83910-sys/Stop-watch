@@ -1,0 +1,99 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.id }} Details | AetherStore{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 24px">
+        <a href="{% url 'store:dashboard' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="checkout-layout" style="grid-template-columns: 1.3fr 0.7fr">
+        
+        <!-- Left Panel: Invoice Details & Items table -->
+        <div class="checkout-form-card glass-panel" style="padding: 24px">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px; flex-wrap:wrap; gap:12px">
+                <div>
+                    <h1 style="color:#fff; font-size:1.6rem">Invoice #{{ order.id }}</h1>
+                    <p style="color:var(--text-secondary); font-size:0.85rem">Placed on {{ order.order_date|date:"F d, Y, h:i A" }}</p>
+                </div>
+                <span class="status-badge 
+                    {% if order.status == 'Pending' %}status-pending
+                    {% elif order.status == 'Processing' %}status-processing
+                    {% elif order.status == 'Shipped' %}status-shipped
+                    {% elif order.status == 'Delivered' %}status-delivered
+                    {% elif order.status == 'Cancelled' %}status-cancelled
+                    {% endif %}">
+                    {{ order.status }}
+                </span>
+            </div>
+
+            <!-- Items Table -->
+            <h3 style="color:#fff; font-size:1.15rem; margin-bottom:16px">Purchased Items</h3>
+            <table class="custom-table" id="invoice-items-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th style="text-align:center">Price</th>
+                        <th style="text-align:center">Qty</th>
+                        <th style="text-align:right">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                        <tr id="invoice-item-{{ item.id }}">
+                            <td>
+                                <div style="display:flex; align-items:center; gap:16px">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width:40px; height:40px; border-radius:4px; object-fit:cover">
+                                    {% else %}
+                                        <div style="width:40px; height:40px; border-radius:4px; background:#120e24; display:flex; align-items:center; justify-content:center; color:var(--text-muted)">
+                                            <i class="fa-regular fa-image"></i>
+                                        </div>
+                                    {% endif %}
+                                    <span style="font-weight:600"><a href="{% url 'store:product_detail' item.product.slug %}" style="color:#fff">{{ item.product.name }}</a></span>
+                                </div>
+                            </td>
+                            <td style="text-align:center">${{ item.price }}</td>
+                            <td style="text-align:center">{{ item.quantity }}</td>
+                            <td style="text-align:right; color:#fff; font-weight:700">${{ item.subtotal }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Panel: Address recap and total costs breakdown -->
+        <div class="cart-summary-card glass-panel" style="padding: 24px">
+            <h3 class="summary-title" style="margin-bottom:20px; font-size:1.15rem">Delivery Information</h3>
+            
+            <div style="font-size:0.9rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:16px; margin-bottom:30px">
+                <div>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Recipient Name</span>
+                    <strong style="color:#fff">{{ order.first_name }} {{ order.last_name }}</strong>
+                </div>
+                <div>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Email Coordinates</span>
+                    <strong style="color:#fff">{{ order.email }}</strong>
+                </div>
+                <div>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Shipping Destination</span>
+                    <strong style="color:#fff">{{ order.address }}</strong>
+                    <div style="margin-top:2px">{{ order.city }}, {{ order.zip_code }}</div>
+                </div>
+            </div>
+
+            <h3 class="summary-title" style="margin-bottom:20px; font-size:1.15rem; border-top:1px solid rgba(255,255,255,0.06); padding-top:20px">Invoiced Totals</h3>
+            
+            <div class="summary-row" style="margin-bottom:12px">
+                <span>Grand Total</span>
+                <span style="color:var(--accent-secondary); font-size:1.35rem; font-weight:800">${{ order.total_price }}</span>
+            </div>
+            
+            <div style="font-size:0.8rem; background:rgba(0,230,118,0.1); color:var(--success); padding:8px 12px; border-radius:4px; text-align:center; font-weight:600">
+                <i class="fa-solid fa-lock"></i> Payment Authorized
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
