@@ -32,3 +32,14 @@ Mathematical Dashboard: Real-time calculators for Average, Fastest/Slowest, and 
 Exports & Controls: CSV downloads, text clipboard summaries, screen wake locks, and sound controls.
 
 TECHNOLOGIES USED
+Core Stack
+HTML5: Structured layout with embedded vector SVG icons.
+CSS3 (Vanilla): Glassmorphism (backdrop-filter), flexbox/grid layout design, neon theme variables, and custom animations.
+JavaScript (ES6+): Core business logic and rendering calculations.
+Advanced Browser APIs
+Web Audio API: Dynamically synthesizes button clicks and C-major alarm chimes using frequency oscillators.
+Web Speech API (webkitSpeechRecognition): Dictates voice command inputs for hands-free control.
+Screen Wake Lock API: Keeps the screen active while timers are running.
+HTML5 Canvas API: Draws the high-DPI responsive line chart of your lap intervals.
+LocalStorage API: Automatically saves and restores timer configurations and lap history.
+High-Resolution Time API (performance.now()): Computes time intervals with microsecond precision
